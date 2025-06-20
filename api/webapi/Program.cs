@@ -3,6 +3,15 @@ using PPM;
 using PPM.Interfaces;
 using PPM.Repositories;
 using PPM.Services;
+using BCrypt.Net;
+
+string password_hash = BCrypt.Net.BCrypt.HashPassword("my password");
+if (BCrypt.Net.BCrypt.Verify("my password", password_hash)) {
+    Console.WriteLine("\n\nPassword is correct.\n\n");
+}
+else {
+    Console.WriteLine("\n\nNo Hash.\n\n");
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
