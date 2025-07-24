@@ -1,35 +1,18 @@
+// ParkEvents.js
 import React, { useState } from 'react';
 import '../css/ParkEvents.css';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
-
-const events = [
-  {
-    id: 1,
-    title: 'Disc Golf Tournament',
-    date: 'July 15, 2025',
-    spots: 25,
-  },
-  {
-    id: 2,
-    title: 'Community Easter Egg Hunt',
-    date: 'April 12, 2025',
-    spots: 100,
-  },
-  {
-    id: 3,
-    title: 'Northern Lights Show',
-    date: 'December 2, 2025',
-    spots: 200,
-  },
-];
+import testData from '../JSON_test/events.json'; 
 
 const ParkEvents = () => {
   const { user, isAuthenticated } = useAuth();
+
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [reservationName, setReservationName] = useState('');
   const [partySize, setPartySize] = useState('');
-  const [userReservations, setUserReservations] = useState([]); // { eventId, name, size }
+  const [userReservations, setUserReservations] = useState(testData.userReservations);
+  const events = testData.events;
 
   const handleRegisterClick = (event) => {
     setSelectedEvent(event);
@@ -54,50 +37,17 @@ const ParkEvents = () => {
   const handleReservationSubmit = (e) => {
     e.preventDefault();
 
-    // --- ⬇️ Backend API call to save reservation ---
-    /*
-    fetch('/api/reservations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        eventId: selectedEvent.id,
-        name: reservationName,
-        size: partySize,
-        userId: loggedInUser.id // if you have a user object
-      })
-    }).then(res => res.json())
-      .then(data => {
-        // Handle success
-      }).catch(err => {
-        console.error("Error saving reservation", err);
-      });
-    */
-
-    // Local mock update
-    const updated = [...userReservations.filter(r => r.eventId !== selectedEvent.id)];
+    const updated = userReservations.filter(r => r.eventId !== selectedEvent.id);
     updated.push({
       eventId: selectedEvent.id,
       name: reservationName,
-      size: partySize,
+      size: partySize
     });
     setUserReservations(updated);
     closeModal();
   };
 
   const handleCancelReservation = () => {
-    // --- ⬇️ Backend API call to delete reservation ---
-    /*
-    fetch(`/api/reservations/${selectedEvent.id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    }).then(() => {
-      // Handle success
-    }).catch(err => {
-      console.error("Error cancelling reservation", err);
-    });
-    */
-
-    // Local mock removal
     setUserReservations(userReservations.filter(r => r.eventId !== selectedEvent.id));
     closeModal();
   };
@@ -125,7 +75,6 @@ const ParkEvents = () => {
         </div>
       </div>
 
-      {/* Modal */}
       {selectedEvent && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -137,7 +86,6 @@ const ParkEvents = () => {
             {!isAuthenticated ? (
               <div>
                 <p>You must be logged in to register for this event.</p>
-                {/* TODO: Replace with your actual routes */}
                 <a href="/login">Login</a> or <a href="/signup">Sign up</a> to continue.
               </div>
             ) : isRegistered ? (

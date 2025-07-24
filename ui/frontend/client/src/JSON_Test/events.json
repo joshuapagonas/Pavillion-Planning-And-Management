@@ -1,0 +1,34 @@
+{
+  "user": {
+    "id": 42,
+    "name": "Jane Doe",
+    "email": "jane.doe@example.com"
+  },
+  "events": [
+    {
+      "id": 1,
+      "title": "Disc Golf Tournament",
+      "date": "July 15, 2025",
+      "spots": 25
+    },
+    {
+      "id": 2,
+      "title": "Community Easter Egg Hunt",
+      "date": "April 12, 2025",
+      "spots": 100
+    },
+    {
+      "id": 3,
+      "title": "Northern Lights Show",
+      "date": "December 2, 2025",
+      "spots": 200
+    }
+  ],
+  "userReservations": [
+    {
+      "eventId": 2,
+      "name": "Jane's Group",
+      "size": 4
+    }
+  ]
+}

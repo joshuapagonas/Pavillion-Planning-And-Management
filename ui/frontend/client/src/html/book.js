@@ -7,23 +7,11 @@ import '../css/book.css';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 
-const parkList = [
-  'Boulan Park',
-  'Brinston Park',
-  'Firefighters Park',
-  'Jaycee Park',
-  'Milverton Park',
-  'Raintree Park',
-  'Jeanne M Stine Community Park',
-];
+// If you're using mock data for testing:
+import testData from '../JSON_test/booking.json';
 
-// Predefined time slots (max 8 hours)
-const timeSlots = [
-  { label: 'Full Day (9 AM–5 PM)', start: '09:00', end: '17:00' },
-  { label: '9 AM–12 PM', start: '09:00', end: '12:00' },
-  { label: '12 PM–3 PM', start: '12:00', end: '15:00' },
-  { label: '3 PM–6 PM', start: '15:00', end: '18:00' },
-];
+const parkList = testData.parks; // Or define inline
+const timeSlots = testData.timeSlots;
 
 function Book() {
   const [selectedPark, setSelectedPark] = useState(null);
@@ -35,11 +23,9 @@ function Book() {
   const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    // TODO: fetch real booked dates for the calendar
-    setBookedDates([
-      new Date(2025, 5, 25),
-      new Date(2025, 5, 28),
-    ]);
+    // Simulate fetching booked dates
+    const convertedDates = testData.bookedDates.map(dateStr => new Date(dateStr));
+    setBookedDates(convertedDates);
   }, []);
 
   const openBooking = (park) => {

@@ -1,0 +1,41 @@
+{
+  "user": {
+    "name": "Jane Doe",
+    "email": "jane@example.com"
+  },
+  "parks": [
+    "Boulan Park",
+    "Brinston Park",
+    "Firefighters Park",
+    "Jaycee Park",
+    "Milverton Park",
+    "Raintree Park",
+    "Jeanne M Stine Community Park"
+  ],
+  "timeSlots": [
+    {
+      "label": "Full Day (9 AM-5 PM)",
+      "start": "09:00",
+      "end": "17:00"
+    },
+    {
+      "label": "9 AM-12 PM",
+      "start": "09:00",
+      "end": "12:00"
+    },
+    {
+      "label": "12 PM-3 PM",
+      "start": "12:00",
+      "end": "15:00"
+    },
+    {
+      "label": "3 PM-6 PM",
+      "start": "15:00",
+      "end": "18:00"
+    }
+  ],
+  "bookedDates": [
+    "2025-06-25",
+    "2025-06-28"
+  ]
+}
