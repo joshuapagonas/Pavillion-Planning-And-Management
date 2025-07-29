@@ -1,84 +1,87 @@
-﻿﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using PPM.Models;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PPM.Models.DTOs;
 using PPM.Models.Services;
 using PPM.Services;
 
 namespace PPM.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class RegistrationController : ControllerBase
+    public class RegistrationController(UserService userService, RegistrationService registrationService, ILogger<RegistrationController> logger) : ControllerBase
     {
-        private readonly RegistrationService _registrationService;
-        private readonly UserService _userService;
-        private readonly ParkService _parkService;
-        private readonly ILogger<RegistrationController> _logger;
-
-        public RegistrationController(
-            RegistrationService registrationService,
-            UserService userService,
-            ParkService parkService,
-            ILogger<RegistrationController> logger)
+        private readonly UserService _userService = userService;
+        private readonly RegistrationService _registrationService = registrationService;
+        [HttpGet("{registration_id}")]
+        public async Task<ActionResult<RegistrationDTO>> GetRegistration(int registration_id)
         {
-            _registrationService = registrationService;
-            _userService = userService;
-            _parkService = parkService;
-            _logger = logger;
-        }
-
-        // POST /api/Registration
-        [HttpPost]
-        public async Task<IActionResult> Register([FromBody] RegistrationDTO dto)
-        {
-            _logger.LogInformation("Starting registration for User ID: {UserId} and Park ID: {ParkId}", dto.user_id, dto.park_id);
-
-            var user = await _userService.GetUserByIdAsync(dto.user_id);
-            var park = await _parkService.GetParkEntityByIdAsync(dto.park_id);
-
-            if (user == null || park == null)
+            var registration = await _registrationService.GetRegistrationDetailsAsync(registration_id);
+            if (registration == null)
             {
-                _logger.LogWarning("User or Park not found. User ID: {UserId}, Park ID: {ParkId}", dto.user_id, dto.park_id);
-                return BadRequest("User or Park not found.");
+                logger.LogWarning("User with ID {user_id} not found.", registration_id);
+                return NotFound();
             }
-
-            var registration = new Registration
-            {
-                user_id = dto.user_id,
-                park_id = dto.park_id,
-                requested_park = dto.requested_park,  
-                pavillion = dto.pavillion,
-                start_time = dto.start_time,
-                end_time = dto.end_time,
-                is_approved = false,
-                registration_date = dto.registration_date,
-                User = user,
-                Park = park
-            };
-
-            await _registrationService.CreateAsync(registration);
-            _logger.LogInformation("Registration created with ID: {RegistrationId}", registration.registration_id);
-
-            return Ok(new
-            {
-                RegistrationId = registration.registration_id
-            });
+            return Ok(registration);
         }
-
-        // GET /api/Registration/user/{userId}
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetBookingsForUser(int userId)
+        [Authorize]
+        [HttpPost("")]
+        public async Task<ActionResult<RegistrationDTO>> CreateRegistration([FromBody] RegistrationDTO registrationDTO)
         {
-            var bookings = await _registrationService.GetBookingsByUserIdAsync(userId);
-
-            if (bookings == null || !bookings.Any())
+            try
             {
-                return NotFound($"No bookings found for User ID {userId}.");
-            }
+                // 🔍 Sanity check for authentication and claims
+                var identity = User?.Identity;
+                bool isAuthenticated = identity?.IsAuthenticated ?? false;
+                int claimCount = User?.Claims?.Count() ?? 0;
 
-            return Ok(bookings);
+                logger.LogInformation("🔒 Is Authenticated: {Auth}", isAuthenticated);
+                logger.LogInformation("🔎 Claims Count: {Count}", claimCount);
+
+                if (User?.Claims != null)
+                {
+                    foreach (var claim in User.Claims)
+                    {
+                        logger.LogInformation("➡️ Incoming Claim: {Type} = {Value}", claim.Type, claim.Value);
+                    }
+                }
+                else
+                {
+                    logger.LogWarning("⚠️ No claims found — User context might be missing or invalid.");
+                }
+
+                logger.LogInformation("Starting booking creation…");
+                var registration = await _registrationService.CreateRegistration(registrationDTO);
+                logger.LogInformation("Booking successfully created: Registration ID {Id}", registration.registration_id);
+                return Ok(registration);
+            }
+            catch (ApplicationException ex)
+            {
+                logger.LogWarning("Failed to create registration: {Message}", ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Unexpected error during registration.");
+                return StatusCode(500, "An unexpected error occurred.");
+            }
         }
+        [HttpGet("user/{user_id}")]
+        public async Task<ActionResult<IEnumerable<RegistrationDTO>>> GetAllUserRegistrations(int user_id)
+        {
+            var logged_in_user_id = _userService.GetLoggedInUserId();
+            if(logged_in_user_id == null || logged_in_user_id != user_id)
+            {
+                logger.LogWarning("Unauthorized access attempt by user {logged_in_user_id} to user {user_id}", logged_in_user_id, user_id);
+                return Unauthorized();
+            }
+            var user_registrations = await _registrationService.GetAllUserRegistrationsAsync(user_id);
+            if (user_registrations == null || !user_registrations.Any())
+            {
+                return NotFound();
+            }
+            return Ok(user_registrations);
+        }
+
     }
 }
-

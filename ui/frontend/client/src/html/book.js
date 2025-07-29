@@ -90,14 +90,14 @@ function Book() {
       park_id,                         
       requested_park: park_name,                       
       registration_date: selectedDate, 
-      start_time:  startTime.toISOString(),
-      end_time:    endTime.toISOString()
+      start_time:  selectedSlot.start + ":00",
+      end_time:    selectedSlot.end + ":00"
     };
 
     console.log('Booking Data Being Sent:', bookingData);
 
     try {
-      const response = await fetch('http://localhost:5132/api/Registration', {
+      const response = await fetch('https://localhost:7203/api/Registration', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -199,4 +199,3 @@ function Book() {
 }
 
 export default Book;
-

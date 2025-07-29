@@ -1,4 +1,3 @@
-using BCrypt.Net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -6,24 +5,23 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PPM;
 using PPM.Interfaces;
-using PPM.Repositories;
 using PPM.Models.Interfaces;
+using PPM.Models.Repositories;
 using PPM.Models.Services;
+using PPM.Repositories;
 using PPM.Services;
-using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // JWT configuration
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-
-if (!jwtSettings.Exists())
-{
-    throw new InvalidOperationException("JWT settings section is missing from configuration.");
-}
-
 var secretKey = jwtSettings["Key"];
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+
+// Add services to the container.
 
 if (string.IsNullOrEmpty(secretKey))
 {
@@ -33,6 +31,8 @@ if (string.IsNullOrEmpty(secretKey))
 Console.WriteLine($"JWT Secret Key Loaded: {(secretKey != null ? "[REDACTED]" : "NULL")}");
 
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -45,14 +45,8 @@ builder.Services.AddScoped<UserService>();
 
 builder.Services.AddScoped<IParkRepository, ParkRepository>();
 builder.Services.AddScoped<ParkService>();
-
 builder.Services.AddScoped<IRegistrationRepository, RegistrationRepository>();
 builder.Services.AddScoped<RegistrationService>();
-
-builder.Services.AddScoped<IEventRepository, EventRepository>();
-builder.Services.AddScoped<EventService>();
-
-builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddCors(options =>
 {
@@ -70,21 +64,23 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-
-        ClockSkew = TimeSpan.Zero
-    };
-});
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!)),
+            //token expiration exact (default allows 5 minutes of leeway).
+            //A token that's expired up to 5 minutes ago is still accepted as it accounts for small time sync
+            //differences between systems (server vs client). TimeSpan.Zero on the other hand makes it so token 
+            //expiration is strict and expires on time
+            ClockSkew = TimeSpan.FromMinutes(5) 
+        };
+    });
 
 builder.Services.AddAuthorization();
 
@@ -124,9 +120,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseDeveloperExceptionPage();
+
 app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
+
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -134,5 +134,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-

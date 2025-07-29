@@ -12,8 +12,8 @@ using PPM;
 namespace webapi.Migrations
 {
     [DbContext(typeof(PPMDBContext))]
-    [Migration("20250717162755_CleanEventSchema")]
-    partial class CleanEventSchema
+    [Migration("20250723181419_BaselineSync")]
+    partial class BaselineSync
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,6 +54,7 @@ namespace webapi.Migrations
 
                     b.Property<DateTime>("event_start_time")
                         .HasColumnType("datetime2");
+
                     b.Property<bool>("is_public_event")
                         .HasColumnType("bit");
 
@@ -74,6 +75,7 @@ namespace webapi.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("event_id");
+
                     b.HasIndex("park_id");
 
                     b.HasIndex("user_id1");
@@ -160,6 +162,7 @@ namespace webapi.Migrations
 
                     b.Property<DateTime>("end_time")
                         .HasColumnType("datetime2");
+
                     b.Property<bool>("is_approved")
                         .HasColumnType("bit");
 
@@ -168,8 +171,10 @@ namespace webapi.Migrations
 
                     b.Property<int>("pavillion")
                         .HasColumnType("int");
+
                     b.Property<DateTime>("registration_date")
                         .HasColumnType("datetime2");
+
                     b.Property<DateTime>("start_time")
                         .HasColumnType("datetime2");
 
@@ -177,6 +182,7 @@ namespace webapi.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("registration_id");
+
                     b.HasIndex("park_id");
 
                     b.HasIndex("user_id");
@@ -262,6 +268,7 @@ namespace webapi.Migrations
                         .HasForeignKey("user_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
                     b.Navigation("Park");
 
                     b.Navigation("User");

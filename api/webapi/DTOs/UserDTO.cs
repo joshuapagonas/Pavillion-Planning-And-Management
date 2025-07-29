@@ -10,5 +10,7 @@
         public bool is_admin { get; set; }
         public string email { get; set; } = string.Empty;
         public string phone_number { get; set; } = string.Empty;
+        public IEnumerable<RegistrationDTO> Registrations { get; set; }
+        public IEnumerable<EventDTO> Events { get; set; }
     }
 }

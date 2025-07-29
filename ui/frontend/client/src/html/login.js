@@ -1,3 +1,4 @@
+// login.js
 import React, { useState } from 'react';
 import '../css/login.css';
 import Header from '../components/Header';
@@ -41,8 +42,8 @@ function Login() {
     setErrorMessage('');
 
     const endpoint = isLoginMode
-      ? 'http://localhost:5132/api/User/Login'
-      : 'http://localhost:5132/api/User/RegisterUser';
+      ? 'https://localhost:7203/api/User/Login'
+      : 'https://localhost:7203/api/User/RegisterUser';
 
     const payload = isLoginMode
       ? {

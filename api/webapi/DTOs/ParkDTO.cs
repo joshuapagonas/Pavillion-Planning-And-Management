@@ -3,7 +3,7 @@
     public class ParkDTO
     {
         public int park_id { get; set; }
-        public string park_name { get; set; }
+        public required string park_name { get; set; }
         public string? geolocation { get; set; }
         public string street_address { get; set; }
         public string city { get; set; }
