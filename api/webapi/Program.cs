@@ -11,9 +11,32 @@ using PPM.Models.Services;
 using PPM.Repositories;
 using PPM.Services;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
+
+/*
+// Load Kestrel configuration conditionally
+builder.WebHost.ConfigureKestrel(options =>
+{
+    var env = builder.Environment;
+
+    if (env.IsProduction() && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+    {
+        options.ConfigureHttpsDefaults(httpsOptions =>
+        {
+            httpsOptions.ServerCertificate = new X509Certificate2(
+                "/etc/letsencrypt/live/ppmparks.xyz/fullchain.pem",
+                "/etc/letsencrypt/live/ppmparks.xyz/privkey.pem"
+            );
+        });
+    }
+});
+*/
+
 
 // JWT configuration
 var jwtSettings = builder.Configuration.GetSection("Jwt");
