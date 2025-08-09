@@ -1,4 +1,4 @@
-# Pavillion Planning & Management
+# Pavilion Planning & Management
 CSI 4999 Senior Capstone Project<br>
 Contributors:<br>
 <br>
